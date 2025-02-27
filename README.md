@@ -9,4 +9,3 @@ Things you may want to cover:
         ruby 3.4.1
   * Deployment instructions
         docker-compose up -d
-* ...
