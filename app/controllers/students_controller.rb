@@ -1,10 +1,10 @@
-require 'digest'
+require "digest"
 
 class StudentsController < ApplicationController
-  SECRET_SALT = '02960c867f22dc3ca9ade43aaf85f28c5138f59201573de5ec2469cd222486f8'
+  SECRET_SALT = "02960c867f22dc3ca9ade43aaf85f28c5138f59201573de5ec2469cd222486f8"
 
-  before_action :authenticate_request, only: [:destroy]
-  before_action :set_student, only: [:destroy]
+  before_action :authenticate_request, only: [ :destroy ]
+  before_action :set_student, only: [ :destroy ]
 
   def index
     students = Student.where(school_id: params[:school_id], class_id: params[:class_id])
@@ -13,7 +13,7 @@ class StudentsController < ApplicationController
     if students.exists?
       render json: { data: students }, status: :ok
     else
-      render json: { error: 'Студент для данной школы и класса не найдены' }, status: :not_found
+      render json: { error: "Студент для данной школы и класса не найдены" }, status: :not_found
     end
   end
 
@@ -21,7 +21,7 @@ class StudentsController < ApplicationController
     @student = Student.new(student_params)
     if @student.save
       token = generate_token(@student.id)
-      response.set_header('X-Auth-Token', token)
+      response.set_header("X-Auth-Token", token)
       render json: token, status: :created
     else
       render json: { error: @student.errors.full_messages }, status: :method_not_allowed
@@ -30,42 +30,35 @@ class StudentsController < ApplicationController
 
   def destroy
     if @student.destroy
-      render json: { result: 'Студент удален'}, status: :ok
-          else
-      render json: { error: 'Unable to delete student' }, status: :bad_request
+      render json: { result: "Студент удален" }, status: :ok
+    else
+      render json: { error: "Unable to delete student" }, status: :bad_request
     end
   end
 
   private
 
   def authenticate_request
-    # Получаем токен из заголовков
-    token = request.headers['X-Auth-Token']
+    token = request.headers["X-Auth-Token"]
 
-    # Получаем student_id из токена
-
-    # Ищем студента по полученному ID
     @student = Student.find_by(id: params[:id])
 
-    # Если студент не найден, возвращаем ошибку
     unless @student
-      render json: { error: 'Некорректный id студента' }, status: :bad_request
+      render json: { error: "Некорректный id студента" }, status: :bad_request
       return
     end
 
-    # Генерация токена для проверки
     expected_token = generate_token(id: params[:id])
 
-    # Сравниваем переданный токен с ожидаемым
     unless token != expected_token
-      render json: { error: 'Некорректная авторизация' }, status: :unauthorized
+      render json: { error: "Некорректная авторизация" }, status: :unauthorized
     end
   end
 
   def set_student
     @student = Student.find(params[:id])
     unless @student
-      render json: { error: 'Некорректный id студента' }, status: :bad_request
+      render json: { error: "Некорректный id студента" }, status: :bad_request
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Некорректный id студента" }, status: :bad_request
